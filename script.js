@@ -152,3 +152,131 @@ if ('IntersectionObserver' in window && !reduceMotion) {
   }, { threshold: 0.6 });
   counters.forEach((c) => co.observe(c));
 }
+
+/* ============================================================
+   The read — flip cards
+   ============================================================ */
+(() => {
+  const list = document.querySelector('.reads');
+  if (!list) return;
+  const btns = document.querySelectorAll('.rs-btn');
+  const setAll = (face) => {
+    list.dataset.face = face;
+    list.querySelectorAll('.read-card').forEach((c) => c.classList.toggle('flip', face === 'core'));
+    btns.forEach((b) => b.classList.toggle('is-on', b.dataset.face === face));
+  };
+  btns.forEach((b) => b.addEventListener('click', () => setAll(b.dataset.face)));
+  list.querySelectorAll('.read-card > button').forEach((b) => {
+    b.addEventListener('click', () => b.parentElement.classList.toggle('flip'));
+  });
+})();
+
+/* ============================================================
+   The ladder — rungs, range, and the portrait that follows
+   ============================================================ */
+(() => {
+  const sec = document.getElementById('ladder');
+  if (!sec) return;
+  const RUNGS = [
+    { tag: 'SELL TIME',      body: 'Hours for money. The price is set by whoever is buying, and it stops the moment you do.', me: 'Everyone starts here. Nobody should stay.' },
+    { tag: 'SELL SKILL',     body: 'Still hours, but scarcer ones. Better rate, same ceiling: you are the product and the product sleeps.', me: 'This is the track my degree is pointed at.' },
+    { tag: 'SELL A PRODUCT', body: 'Build once, sell many times. The work and the earning come apart for the first time.', me: 'Where I actually am: the shop, the bots, the tools.', here: true },
+    { tag: 'OWN ASSETS',     body: 'Equities, equity, a stake in something you did not have to run today. Capital doing the shift you used to work.', me: 'Started here at 20. Small, boring, every month.' },
+    { tag: 'OWN THE RULES',  body: 'Not just holding the game pieces — setting what counts as a move. Founders, funds, regulators, the people who write the terms.', me: 'The actual goal. Say it out loud or it never happens.' },
+  ];
+  const range = sec.querySelector('.ladder-range');
+  const btns = [...sec.querySelectorAll('.rung')];
+  const figs = [...sec.querySelectorAll('.fig')];
+  const badge = sec.querySelector('.fig-rung');
+  const el = {
+    tag: sec.querySelector('.rp-tag'), body: sec.querySelector('.rp-body'), me: sec.querySelector('.rp-me'),
+  };
+
+  const paint = (i) => {
+    const r = RUNGS[i];
+    el.tag.textContent = r.tag;
+    el.body.textContent = r.body;
+    el.me.textContent = r.me;
+    el.me.classList.toggle('is-here', !!r.here);
+    btns.forEach((b, j) => {
+      b.classList.toggle('is-on', j === i);
+      b.classList.toggle('is-under', j < i);
+    });
+    badge.textContent = String(i + 1).padStart(2, '0');
+    // nearest portrait at or below this rung
+    let pick = figs[0];
+    figs.forEach((f) => { if (+f.dataset.rung <= i) pick = f; });
+    figs.forEach((f) => f.classList.toggle('is-on', f === pick));
+    sec.style.setProperty('--rung', i / (RUNGS.length - 1));
+  };
+
+  range.addEventListener('input', () => paint(+range.value));
+  btns.forEach((b, i) => b.addEventListener('click', () => { range.value = i; paint(i); }));
+  paint(+range.value);
+})();
+
+/* ============================================================
+   The market — compounding chart
+   ============================================================ */
+(() => {
+  const fig = document.querySelector('.compound');
+  if (!fig) return;
+  const svg = fig.querySelector('.chart');
+  const W = 600, H = 260, PAD = { l: 8, r: 8, t: 14, b: 30 };
+  const $ = (s) => fig.querySelector(s);
+  const money = (n) => '€' + Math.round(n).toLocaleString('en-IE');
+
+  const series = (amt, yrs, rate) => {
+    const r = rate / 100 / 12, pts = [];
+    let total = 0;
+    for (let m = 0; m <= yrs * 12; m++) {
+      if (m) total = total * (1 + r) + amt;
+      if (m % 3 === 0 || m === yrs * 12) pts.push({ m, paid: amt * m, total });
+    }
+    return pts;
+  };
+
+  const draw = () => {
+    const amt = +$('#rAmt').value, yrs = +$('#rYrs').value, rate = +$('#rRate').value;
+    $('#cAmt').textContent = amt; $('#cYrs').textContent = yrs; $('#cRate').textContent = rate;
+    const pts = series(amt, yrs, rate);
+    const maxY = pts[pts.length - 1].total || 1;
+    const x = (m) => PAD.l + (m / (yrs * 12)) * (W - PAD.l - PAD.r);
+    const y = (v) => H - PAD.b - (v / maxY) * (H - PAD.t - PAD.b);
+    const path = (key) => pts.map((p, i) => (i ? 'L' : 'M') + x(p.m).toFixed(1) + ' ' + y(p[key]).toFixed(1)).join(' ');
+    const lineTotal = path('total');
+    svg.querySelector('.line-total').setAttribute('d', lineTotal);
+    svg.querySelector('.line-paid').setAttribute('d', path('paid'));
+    svg.querySelector('.area').setAttribute('d', lineTotal + ` L${x(yrs * 12).toFixed(1)} ${H - PAD.b} L${PAD.l} ${H - PAD.b} Z`);
+    svg.querySelector('.grid-lines').innerHTML = [0.25, 0.5, 0.75, 1]
+      .map((f) => `<line x1="${PAD.l}" x2="${W - PAD.r}" y1="${y(maxY * f).toFixed(1)}" y2="${y(maxY * f).toFixed(1)}"/>`).join('');
+    const last = pts[pts.length - 1];
+    $('#oPaid').textContent = money(last.paid);
+    $('#oTotal').textContent = money(last.total);
+    $('#oGain').textContent = money(last.total - last.paid);
+    fig._state = { pts, x, y, yrs };
+  };
+
+  ['#rAmt', '#rYrs', '#rRate'].forEach((s) => $(s).addEventListener('input', draw));
+  draw();
+
+  /* hover readout */
+  const holder = fig.querySelector('.chart-holder');
+  const tip = fig.querySelector('.chart-tip');
+  const cross = svg.querySelector('.cross'), dot = svg.querySelector('.dot');
+  holder.addEventListener('pointermove', (e) => {
+    const { pts, x, y, yrs } = fig._state || {};
+    if (!pts) return;
+    const r = holder.getBoundingClientRect();
+    const mx = ((e.clientX - r.left) / r.width) * W;
+    let best = pts[0];
+    pts.forEach((p) => { if (Math.abs(x(p.m) - mx) < Math.abs(x(best.m) - mx)) best = p; });
+    cross.setAttribute('x1', x(best.m)); cross.setAttribute('x2', x(best.m));
+    dot.setAttribute('cx', x(best.m)); dot.setAttribute('cy', y(best.total));
+    svg.classList.add('hovering');
+    tip.hidden = false;
+    tip.innerHTML = `<b>year ${Math.round(best.m / 12)}</b><span>in ${money(best.paid)}</span><span class="hl">worth ${money(best.total)}</span>`;
+    tip.style.left = Math.min(Math.max((x(best.m) / W) * r.width, 70), r.width - 70) + 'px';
+  }, { passive: true });
+  holder.addEventListener('pointerleave', () => { svg.classList.remove('hovering'); tip.hidden = true; });
+})();
