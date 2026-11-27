@@ -77,6 +77,7 @@ const Arcade = (() => {
       const orbs = [], parts = [], pops = [], rings = [];
       const got = { lab: 0, shop: 0, build: 0, market: 0, rest: 0 };
       let combo = 0, best = 0, caught = 0, missed = 0, drained = 0, blocked = 0;
+      let corePulse = 0, hurt = 0;
       let shake = 0, flash = 0, flashCol = '255,255,255';
       let t0 = performance.now(), last = t0, spawnAcc = 0, done = false;
       const SHIELD_ARC = 0.62;
@@ -139,6 +140,7 @@ const Arcade = (() => {
               if (o.k === 'drain') {
                 combo = 0; blocked++;
                 shake = 9; flash = .45; flashCol = '255,45,45';
+                hurt = Math.min(0.5, hurt + 0.3);
                 burst(x, y, '255,45,45', 18, 1.1);
                 pop(x, y, 'BLOCKED', '#ff9ec4');
               } else {
@@ -147,6 +149,7 @@ const Arcade = (() => {
                 const mult = combo >= 6 ? 3 : combo >= 3 ? 2 : 1;
                 got[o.k] += mult === 1 ? 1 : mult === 2 ? 1.5 : 2;
                 shake = Math.min(10, 4 + mult * 2); flash = 0.5; flashCol = T.glow.slice(5);
+                corePulse = Math.min(1, corePulse + 0.35 + mult * 0.12);
                 burst(x, y, T.glow.slice(5), 14 + mult * 8, 1 + mult * 0.3);
                 pop(x, y, mult > 1 ? `${T.label} ×${mult}` : T.label, T.c);
                 rings.push({ x, y, r: 10, life: 1, col: T.c });
@@ -159,6 +162,7 @@ const Arcade = (() => {
             if (o.k === 'drain') {
               combo = 0; drained++;
               shake = 22; flash = 1; flashCol = '255,45,45';
+              hurt = 1;
               burst(x, y, '255,45,45', 34, 1.9);
               pop(CX, CY - R * 0.6, '−ENERGY', '#ff2d2d');
             } else { missed++; combo = 0; burst(x, y, '160,140,180', 8, .6); }
@@ -183,6 +187,172 @@ const Arcade = (() => {
 
         if (left <= 0) return end();
         requestAnimationFrame(frame);
+      }
+
+      /* ============================================================
+         the character rig
+         Her portrait is split into three tinted copies so it can be pulled
+         apart into a chromatic glitch, sits inside an aura that takes the
+         colour of whatever she is currently strongest in, and is ringed by
+         five arcs that are her actual stat bars.
+         ============================================================ */
+      const STAT_COL = {
+        energy: [195, 168, 255], cred: [95, 216, 255], mom: [255, 79, 134],
+        cash: [240, 192, 74], capital: [94, 240, 168],
+      };
+      const STAT_ORDER = ['cred', 'mom', 'cash', 'capital', 'energy'];
+      let tints = null, tintSrc = '';
+
+      function buildTints(img, size) {
+        const mk = (rgb) => {
+          const c = document.createElement('canvas');
+          c.width = c.height = size;
+          const x = c.getContext('2d');
+          const s = Math.max(size / img.naturalWidth, size / img.naturalHeight);
+          const w = img.naturalWidth * s, h = img.naturalHeight * s;
+          x.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+          x.globalCompositeOperation = 'multiply';
+          x.fillStyle = rgb; x.fillRect(0, 0, size, size);
+          x.globalCompositeOperation = 'destination-in';
+          x.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+          return c;
+        };
+        return { r: mk('#ff0000'), g: mk('#00ff00'), b: mk('#0000ff'), plain: (() => {
+          const c = document.createElement('canvas'); c.width = c.height = size;
+          const x = c.getContext('2d');
+          const s = Math.max(size / img.naturalWidth, size / img.naturalHeight);
+          const w = img.naturalWidth * s, h = img.naturalHeight * s;
+          x.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+          return c;
+        })() };
+      }
+
+      function drawCharacter(elapsed) {
+        const st = (opts.stats && opts.stats()) || {};
+        const energy = st.energy ?? 70;
+        const exhausted = Math.max(0, 1 - energy / 24);          // 0 fine → 1 spent
+        const beat = Math.sin(elapsed * 0.0042) * 0.5 + 0.5;
+
+        corePulse = Math.max(0, corePulse - 0.045);
+        hurt = Math.max(0, hurt - 0.03);
+
+        /* dominant stat drives the aura colour */
+        let dom = 'mom', domV = -1;
+        STAT_ORDER.forEach((k) => { if ((st[k] ?? 0) > domV) { domV = st[k] ?? 0; dom = k; } });
+        const [ar, ag, ab] = STAT_COL[dom];
+
+        const coreR = R * 0.42 * (1 + corePulse * 0.12);
+        const auraR = coreR * (2.5 + beat * 0.3 + combo * 0.05);
+
+        /* ---- aura ---- */
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        const ag1 = ctx.createRadialGradient(CX, CY, coreR * 0.8, CX, CY, auraR);
+        ag1.addColorStop(0, `rgba(${ar},${ag},${ab},${0.3 + combo * 0.035 + corePulse * 0.3})`);
+        ag1.addColorStop(0.45, `rgba(${ar},${ag},${ab},${0.1 + combo * 0.015})`);
+        ag1.addColorStop(1, `rgba(${ar},${ag},${ab},0)`);
+        ctx.beginPath(); ctx.arc(CX, CY, auraR, 0, TAU); ctx.fillStyle = ag1; ctx.fill();
+        if (exhausted > 0.1) {                                    /* running on empty */
+          const flick = 0.5 + Math.sin(elapsed * 0.02) * 0.5;
+          const rg = ctx.createRadialGradient(CX, CY, coreR * 0.9, CX, CY, auraR * 1.1);
+          rg.addColorStop(0, `rgba(255,40,40,${exhausted * 0.4 * flick})`);
+          rg.addColorStop(1, 'rgba(255,40,40,0)');
+          ctx.beginPath(); ctx.arc(CX, CY, auraR * 1.1, 0, TAU); ctx.fillStyle = rg; ctx.fill();
+        }
+        ctx.restore();
+
+        /* ---- orbiting sparks ---- */
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        const sparks = 10 + combo * 2;
+        for (let i = 0; i < sparks; i++) {
+          const a = elapsed * 0.0012 * (i % 2 ? 1 : -1) + (i / sparks) * TAU;
+          const rr = coreR + 16 + Math.sin(elapsed * 0.003 + i) * 7;
+          const x = CX + Math.cos(a) * rr, y = CY + Math.sin(a) * rr;
+          const s = 1.4 + Math.sin(elapsed * 0.006 + i * 2) * 0.9;
+          ctx.beginPath(); ctx.arc(x, y, Math.max(0.4, s), 0, TAU);
+          ctx.fillStyle = `rgba(${ar},${ag},${ab},.8)`; ctx.fill();
+        }
+        ctx.restore();
+
+        /* ---- her, with a chromatic split that widens when hurt ---- */
+        const px = Math.round(coreR * 2);
+        if (portrait && portrait.complete && portrait.naturalWidth) {
+          if (!tints || tintSrc !== portrait.src || tints.plain.width !== px) {
+            tints = buildTints(portrait, px); tintSrc = portrait.src;
+          }
+          const split = hurt * 8 + exhausted * 2.5 + (combo >= 6 ? 1.2 : 0);
+          ctx.save();
+          ctx.beginPath(); ctx.arc(CX, CY, coreR, 0, TAU); ctx.clip();
+          const x0 = CX - coreR, y0 = CY - coreR;
+          if (split > 0.4) {
+            ctx.globalCompositeOperation = 'lighter';
+            const j = Math.sin(elapsed * 0.05) * split;
+            ctx.drawImage(tints.r, x0 - split, y0 + j * 0.2, px, px);
+            ctx.drawImage(tints.g, x0, y0, px, px);
+            ctx.drawImage(tints.b, x0 + split, y0 - j * 0.2, px, px);
+          } else {
+            ctx.drawImage(tints.plain, x0, y0, px, px);
+          }
+          /* horizontal tear lines while hurt */
+          if (hurt > 0.15) {
+            ctx.globalCompositeOperation = 'source-over';
+            for (let i = 0; i < 3; i++) {
+              const yy = CY - coreR + Math.random() * coreR * 2;
+              const h = 2 + Math.random() * 5;
+              ctx.drawImage(tints.plain, 0, yy - y0, px, h, x0 + rand(-10, 10), yy, px, h);
+            }
+          }
+          ctx.restore();
+        } else {
+          ctx.beginPath(); ctx.arc(CX, CY, coreR, 0, TAU);
+          ctx.fillStyle = '#2a1636'; ctx.fill();
+        }
+
+        /* inner rim */
+        ctx.beginPath(); ctx.arc(CX, CY, coreR, 0, TAU);
+        ctx.strokeStyle = `rgba(${ar},${ag},${ab},${.5 + corePulse * .5})`;
+        ctx.lineWidth = 2 + corePulse * 3; ctx.stroke();
+
+        /* ---- stat arcs: five bars wrapped around her ---- */
+        const gap = 0.1, seg = (TAU - gap * 5) / 5;
+        STAT_ORDER.forEach((k, i) => {
+          const v = Math.max(0, Math.min(100, st[k] ?? 0)) / 100;
+          const a0 = -Math.PI / 2 + i * (seg + gap);
+          const [r0, g0, b0] = STAT_COL[k];
+          const rr = coreR + 11;
+          ctx.beginPath(); ctx.arc(CX, CY, rr, a0, a0 + seg);
+          ctx.strokeStyle = 'rgba(255,255,255,.1)'; ctx.lineWidth = 4; ctx.lineCap = 'butt'; ctx.stroke();
+          ctx.beginPath(); ctx.arc(CX, CY, rr, a0, a0 + seg * v);
+          ctx.strokeStyle = `rgba(${r0},${g0},${b0},.95)`; ctx.lineWidth = 4; ctx.stroke();
+        });
+
+        /* ---- two counter-rotating tick rings ---- */
+        ctx.save(); ctx.translate(CX, CY);
+        [[0.00035, 48, coreR + 20, 'rgba(195,168,255,'], [-0.0006, 24, coreR + 30, `rgba(${ar},${ag},${ab},`]]
+          .forEach(([sp, n, rr, col]) => {
+            ctx.rotate(elapsed * sp);
+            for (let i = 0; i < n; i++) {
+              const a = (i / n) * TAU, maj = i % 6 === 0;
+              ctx.beginPath();
+              ctx.moveTo(Math.cos(a) * rr, Math.sin(a) * rr);
+              ctx.lineTo(Math.cos(a) * (rr + (maj ? 7 : 3)), Math.sin(a) * (rr + (maj ? 7 : 3)));
+              ctx.strokeStyle = col + (maj ? .5 : .18) + ')'; ctx.lineWidth = 1.3; ctx.stroke();
+            }
+            ctx.rotate(-elapsed * sp);
+          });
+        ctx.restore();
+
+        /* ---- combo flare: extra ignited rings at 3 and 6 ---- */
+        if (combo >= 3) {
+          const n = combo >= 6 ? 2 : 1;
+          for (let i = 0; i < n; i++) {
+            const rr = coreR + 38 + i * 9 + Math.sin(elapsed * 0.005 + i) * 3;
+            ctx.beginPath(); ctx.arc(CX, CY, rr, elapsed * 0.002 + i, elapsed * 0.002 + i + 2.2);
+            ctx.strokeStyle = combo >= 6 ? 'rgba(94,240,168,.8)' : 'rgba(240,192,74,.7)';
+            ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.stroke();
+          }
+        }
       }
 
       /* ---------- draw ---------- */
@@ -240,29 +410,7 @@ const Arcade = (() => {
         }
         ctx.globalCompositeOperation = 'source-over';
 
-        /* her, in the middle */
-        const coreR = R * 0.42;
-        ctx.save();
-        ctx.beginPath(); ctx.arc(CX, CY, coreR, 0, TAU); ctx.clip();
-        if (portrait && portrait.complete && portrait.naturalWidth) {
-          const s = Math.max(coreR * 2 / portrait.naturalWidth, coreR * 2 / portrait.naturalHeight);
-          const w = portrait.naturalWidth * s, h = portrait.naturalHeight * s;
-          ctx.drawImage(portrait, CX - w / 2, CY - h / 2, w, h);
-        } else { ctx.fillStyle = '#2a1636'; ctx.fillRect(CX - coreR, CY - coreR, coreR * 2, coreR * 2); }
-        ctx.restore();
-        ctx.beginPath(); ctx.arc(CX, CY, coreR, 0, TAU);
-        ctx.strokeStyle = 'rgba(255,158,196,.75)'; ctx.lineWidth = 2; ctx.stroke();
-
-        /* rotating tick ring */
-        ctx.save(); ctx.translate(CX, CY); ctx.rotate(elapsed * 0.00035);
-        for (let i = 0; i < 48; i++) {
-          ctx.beginPath();
-          const a = (i / 48) * TAU, rr = coreR + 9;
-          ctx.moveTo(Math.cos(a) * rr, Math.sin(a) * rr);
-          ctx.lineTo(Math.cos(a) * (rr + (i % 6 === 0 ? 7 : 3)), Math.sin(a) * (rr + (i % 6 === 0 ? 7 : 3)));
-          ctx.strokeStyle = `rgba(195,168,255,${i % 6 === 0 ? .55 : .2})`; ctx.lineWidth = 1.4; ctx.stroke();
-        }
-        ctx.restore();
+        drawCharacter(elapsed);
 
         /* the shield */
         const sg = ctx.createLinearGradient(CX - R, CY, CX + R, CY);

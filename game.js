@@ -289,6 +289,9 @@ function openRound() {
     const res = await Arcade.run($('#arena'), {
       duration: 20000,
       portrait: $('#portrait'),
+      /* live stats so the character rig can react: the aura takes the colour of
+         whatever she is strongest in, and she visibly degrades when exhausted */
+      stats: () => ({ energy: S.energy, cred: S.cred, mom: S.mom, cash: S.cash, capital: S.capital }),
       ...(ROUND_FLAVOUR[S.q] || {}),
       onTick: ({ left, combo }) => {
         $('#rTime').textContent = (left / 1000).toFixed(1);
