@@ -1,6 +1,4 @@
-# Xiaofan Wang — personal site
+# Personal site
 
-Responsive personal website built with plain HTML, CSS and JavaScript and hosted on GitHub Pages.
-
-The portfolio deliberately distinguishes verified experience from early-stage learning projects. No analytics or tracking scripts are used.
-
+Built with plain HTML, CSS and JavaScript, hosted on GitHub Pages.
+No analytics and no tracking scripts.

@@ -40,8 +40,8 @@ const TRACKS = [
 /* ---------- events: drawn from her real trajectory ---------- */
 const EVENTS = [
   {
-    tag: 'Q1 · NANJING → DUBLIN', title: 'The flight is booked.',
-    body: 'A China–Ireland joint programme means two universities, two grading systems and one visa that does not care about your feelings. You land with a suitcase and a laptop.',
+    tag: 'Q1 · THE MOVE', title: 'The flight is booked.',
+    body: 'An international joint programme means two universities, two grading systems and one visa that does not care about your feelings. You land with a suitcase and a laptop.',
     choices: [
       { t: 'Front-load the coursework. Earn the room to move later.', fx: { cred: 6, energy: -6 }, say: 'Boring first. Interesting later.' },
       { t: 'Open the shop in week one. Cash buys options.', fx: { cash: 14, mom: 8, energy: -8, cred: -2 }, say: 'Rent does not wait for me to settle in.' },
