@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0510">
+  <meta name="description" content="BACK LINDA — a founder simulator. You have one cheque and eight quarters. Turn a 21-year-old pharma student in Dublin into something worth owning.">
+  <meta property="og:title" content="BACK LINDA — a founder simulator">
+  <meta property="og:description" content="One cheque. Eight quarters. Six endings. Can you get her to YC before she burns out?">
+  <meta property="og:url" content="https://lindaa283.github.io/game.html">
+  <link rel="canonical" href="https://lindaa283.github.io/game.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Archivo:wght@400;600;800;900&family=Space+Mono:wght@400;700&display=swap">
+  <link rel="stylesheet" href="game.css">
+  <title>BACK LINDA — a founder simulator</title>
+</head>
+<body>
+<div class="scanlines" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<main class="cab" id="cab">
+
+  <!-- ══════════════ TITLE ══════════════ -->
+  <section class="screen is-on" id="s-title">
+    <div class="title-art" aria-hidden="true">
+      <span class="ta ta1">♦</span><span class="ta ta2">✦</span><span class="ta ta3">♥</span><span class="ta ta4">◆</span>
+    </div>
+    <p class="kicker">A FOUNDER SIMULATOR · 2026</p>
+    <h1 class="logo"><span>BACK</span><em>LINDA</em></h1>
+    <p class="tagline">One cheque. Eight quarters. Six endings.<br>
+      She’s 21, in Dublin, with a shop, a GitHub and no safety net.<br>
+      <b>Can you get her out before she burns out?</b></p>
+
+    <div class="term-sheet">
+      <p class="ts-label">— CHOOSE YOUR POSITION —</p>
+      <div class="stakes" role="radiogroup" aria-label="Choose your cheque">
+        <button type="button" class="stake" data-cheque="10" data-equity="5" role="radio" aria-checked="false">
+          <i>ANGEL</i><b>€10,000</b><span>5% · low risk, low say</span>
+        </button>
+        <button type="button" class="stake is-on" data-cheque="25" data-equity="12" role="radio" aria-checked="true">
+          <i>SEED</i><b>€25,000</b><span>12% · the balanced bet</span>
+        </button>
+        <button type="button" class="stake" data-cheque="50" data-equity="25" role="radio" aria-checked="false">
+          <i>CONVICTION</i><b>€50,000</b><span>25% · all in on a 21-year-old</span>
+        </button>
+      </div>
+      <button type="button" class="big-btn" id="btnStart">SIGN THE TERM SHEET</button>
+      <p class="ts-foot">Fiction. A game about a real person’s real projects, played for fun — not a securities offering, not financial advice, and not a record of anything that happened.</p>
+    </div>
+
+    <div class="title-links">
+      <a href="index.html">← back to the site</a>
+      <button type="button" id="btnSound" class="sound-btn" aria-pressed="false">♪ sound: off</button>
+    </div>
+  </section>
+
+  <!-- ══════════════ GAME ══════════════ -->
+  <section class="screen" id="s-game">
+    <header class="hud">
+      <div class="hud-q"><span>QUARTER</span><b id="hQ">1 / 8</b></div>
+      <div class="meters">
+        <div class="meter" data-k="cash"><span>CASH</span><div class="bar"><i></i></div><b></b></div>
+        <div class="meter" data-k="cred"><span>CREDIBILITY</span><div class="bar"><i></i></div><b></b></div>
+        <div class="meter" data-k="mom"><span>MOMENTUM</span><div class="bar"><i></i></div><b></b></div>
+        <div class="meter" data-k="energy"><span>ENERGY</span><div class="bar"><i></i></div><b></b></div>
+        <div class="meter" data-k="capital"><span>CAPITAL</span><div class="bar"><i></i></div><b></b></div>
+      </div>
+      <div class="hud-eq"><span>YOUR STAKE</span><b id="hEq">—</b></div>
+    </header>
+
+    <div class="stage">
+      <aside class="char">
+        <div class="char-frame">
+          <img id="portrait" src="img/fig-01.jpg" alt="Linda" width="620" height="827">
+          <span class="char-scan"></span>
+          <div class="char-plate">
+            <b>LINDA</b>
+            <i id="charMood">FOCUSED</i>
+          </div>
+        </div>
+        <div class="speech" id="speech" hidden><p></p></div>
+      </aside>
+
+      <div class="play">
+        <article class="event" id="eventCard">
+          <p class="ev-tag" id="evTag">EVENT</p>
+          <h2 id="evTitle">—</h2>
+          <p id="evBody">—</p>
+          <div class="choices" id="choices"></div>
+        </article>
+
+        <article class="alloc" id="allocCard" hidden>
+          <p class="ev-tag">ALLOCATE HER QUARTER</p>
+          <h2>Three focus tokens. <span class="rem">Left: <b id="tokLeft">3</b></span></h2>
+          <div class="tracks" id="tracks"></div>
+          <button type="button" class="big-btn" id="btnRun" disabled>RUN THE QUARTER ▸</button>
+        </article>
+      </div>
+
+      <aside class="log">
+        <p class="log-label">FEED</p>
+        <ol id="logList"></ol>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ══════════════ ENDING ══════════════ -->
+  <section class="screen" id="s-end">
+    <div class="end-wrap">
+      <p class="kicker" id="endRank">ENDING</p>
+      <h2 class="end-title" id="endTitle">—</h2>
+      <img class="end-img" id="endImg" src="img/fig-01.jpg" alt="" width="620" height="827">
+      <p class="end-body" id="endBody">—</p>
+      <div class="end-stats" id="endStats"></div>
+      <div class="end-actions">
+        <button type="button" class="big-btn" id="btnAgain">RUN IT AGAIN</button>
+        <button type="button" class="ghost-btn" id="btnCopy">COPY RESULT</button>
+        <a class="ghost-btn" id="btnX" href="#" target="_blank" rel="noreferrer">POST IT ON X</a>
+      </div>
+      <p class="end-foot">The real one is at <a href="https://x.com/wongyong_fan" target="_blank" rel="noreferrer">@wongyong_fan</a> · <a href="index.html">see the actual projects</a></p>
+      <div class="endings-seen"><span>ENDINGS FOUND</span><div id="seenList"></div></div>
+    </div>
+  </section>
+
+</main>
+<script src="game.js" defer></script>
+</body>
+</html>
