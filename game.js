@@ -117,7 +117,11 @@ const EVENTS = [
 const ENDINGS = [
   {
     id: 'rockstar', name: 'BOUGHT ROCKSTAR', rank: 'SECRET ENDING · 1 of 6', img: 'img/fig-03.jpg',
-    gate: (s) => s.capital >= 62 && s.cash >= 40 && s.mom >= 58 && s.cred >= 52 && s.energy >= 20,
+    /* A skill gate, not a stat gate: you had to protect her almost perfectly
+       for eight quarters AND build everything. Stat thresholds alone can be
+       reached by a patient player; letting through three drains cannot. */
+    gate: (s) => s.arcade && s.leaks <= 3 && s.capital >= 70 && s.cash >= 55
+                 && s.mom >= 70 && s.cred >= 65 && s.energy >= 35,
     mult: 41,
     body: 'It took longer than the tweet implied. The shop became a platform, the platform threw off cash, the cash became positions, and the positions became a holding company with a very silly name. She flies to Vice City for the signing and wears the Teto wig to the board photo on purpose. Somewhere a 21-year-old reads about it and decides she is not an NPC either.',
   },
@@ -200,6 +204,7 @@ $('#btnSound').addEventListener('click', (e) => {
 $('#btnStart').addEventListener('click', () => {
   Object.assign(S, {
     q: 0, cash: 20 + S.cheque * 0.4, cred: 25, mom: 20, energy: 70, capital: 5, log: [],
+    leaks: 0, arcade: false, drainCost: 0,
   });
   S.cash = clamp(S.cash);
   $('#logList').innerHTML = '';
@@ -219,6 +224,7 @@ function nextQuarter() {
   paintMeters();
 
   $('#allocCard').hidden = true;
+  $('#roundCard').hidden = true;
   const card = $('#eventCard');
   card.hidden = false;
   card.classList.remove('in'); void card.offsetWidth; card.classList.add('in');
@@ -245,7 +251,83 @@ function pickChoice(c, ev) {
   pushLog(`${ev.tag.split('·')[0].trim()} — ${c.t}`);
   logDelta(c.fx);
   $('#eventCard').hidden = true;
-  openAlloc();
+  reduceMotion ? openAlloc() : openRound();
+}
+
+/* Each quarter's round is tuned to the quarter it belongs to, so the eight
+   rounds do not feel like the same twenty seconds eight times. */
+const ROUND_FLAVOUR = [
+  { bias: { lab: 1.4, rest: 1.2 }, hazard: 0.12, speed: 0.9 },           // Q1 settling in
+  { bias: { lab: 2.0 }, hazard: 0.16 },                                   // Q2 the lab
+  { bias: { build: 2.0, shop: 1.4 }, hazard: 0.15, speed: 1.05 },         // Q3 it goes viral
+  { bias: { lab: 1.6, build: 1.3 }, hazard: 0.2 },                        // Q4 iGEM eats the quarter
+  { bias: { market: 2.4 }, hazard: 0.24, speed: 1.1 },                    // Q5 the drawdown
+  { bias: { shop: 1.6, rest: 0.9 }, hazard: 0.18, speed: 1.1 },           // Q6 the job offer
+  { bias: { build: 1.6, market: 1.3 }, hazard: 0.18, speed: 1.15 },       // Q7 the read
+  /* deadline week is the hardest round, but it must not be an automatic loss:
+     keep the speed, ease the hazard rate and leave rest on the table */
+  { bias: { build: 1.5, lab: 1.5, rest: 1.1 }, hazard: 0.19, speed: 1.3 },
+];
+
+/* ============================================================
+   the arcade round — replaces the token UI when motion is allowed
+   ============================================================ */
+function openRound() {
+  const card = $('#roundCard');
+  card.hidden = false;
+  card.classList.remove('in'); void card.offsetWidth; card.classList.add('in');
+  $('#rNo').textContent = S.q + 1;
+  $('#roundStart').hidden = false;
+  $('#haul').innerHTML = '';
+  $('#rCombo').textContent = '';
+  $('#rTime').textContent = '20.0';
+
+  $('#btnSkip').onclick = () => { Snd.tick(); card.hidden = true; openAlloc(); };
+  $('#btnGo').onclick = async () => {
+    Snd.ok();
+    $('#roundStart').hidden = true;
+    const res = await Arcade.run($('#arena'), {
+      duration: 20000,
+      portrait: $('#portrait'),
+      ...(ROUND_FLAVOUR[S.q] || {}),
+      onTick: ({ left, combo }) => {
+        $('#rTime').textContent = (left / 1000).toFixed(1);
+        $('#rCombo').textContent = combo >= 2 ? `${combo}× combo` : '';
+      },
+    });
+    finishRound(res);
+  };
+}
+
+function finishRound(res) {
+  /* an orb is worth a third of a token, so a strong round ≈ the old 3 tokens */
+  /* Normalise the haul instead of passing raw counts through: the mix you
+     caught sets the direction, skill sets the magnitude inside a bounded range.
+     Without this, combo multipliers inflate a round well past the 3-token
+     economy the endings are balanced against. */
+  const raw = TRACKS.map((t) => Math.max(0, res.got[t.k] || 0));
+  const sum = raw.reduce((a, b) => a + b, 0);
+  const total = Math.min(3.2, 0.9 + sum * 0.085);
+  S.alloc = {};
+  TRACKS.forEach((t, i) => (S.alloc[t.k] = sum ? (raw[i] / sum) * total : 0));
+  /* every drain that reached her is a straight energy cost, applied here so it
+     reads as one number instead of hiding inside a negative REST allocation */
+  S.drainCost = res.drained * 2;
+  S.leaks += res.drained;
+  S.arcade = true;  // only the ones that got past the shield
+
+  const haul = $('#haul');
+  haul.innerHTML = TRACKS
+    .filter((t) => res.got[t.k] > 0)
+    .map((t) => `<span style="--c:${Arcade.TYPES[t.k].c}"><b>${t.name}</b> ${res.got[t.k].toFixed(1)}</span>`)
+    .join('') + `<span class="haul-meta">best combo ${res.best}× · ${res.caught} caught · ${res.blocked} blocked · ${res.drained} got through</span>`;
+
+  pushLog(`Quarter played — ${res.caught} caught, ${res.blocked} blocked, ${res.drained} got through, best ${res.best}×`, 'hi');
+  if (res.drained >= 3) say('Too much got through. That one hurt.');
+  else if (res.best >= 6) say('That is the rhythm. Keep it.');
+
+  Snd.win();
+  setTimeout(() => { $('#roundCard').hidden = true; resolveQuarter(); }, 1500);
 }
 
 function openAlloc() {
@@ -292,16 +374,21 @@ function paintAlloc() {
   });
 }
 
-$('#btnRun').addEventListener('click', () => {
+$('#btnRun').addEventListener('click', () => { $('#allocCard').hidden = true; resolveQuarter(); });
+
+/* Both routes into a quarter — the arcade round and the manual token UI —
+   fill S.alloc and then land here, so the balance tables stay the one source. */
+function resolveQuarter() {
   const a = S.alloc;
-  const fx = { cash: 0, cred: 0, mom: 0, energy: -3, capital: 0 };
+  const fx = { cash: 0, cred: 0, mom: 0, energy: -2 - (S.drainCost || 0), capital: 0 };
+  S.drainCost = 0;
 
   fx.cred += a.lab * 7;      fx.energy -= a.lab * 3;
   fx.cash += a.shop * 11 * (1 + S.mom / 200); fx.energy -= a.shop * 4;
   fx.mom += a.build * 8;     fx.cred += a.build * 2; fx.energy -= a.build * 3;
   const moved = Math.min(S.cash * 0.75, a.market * 12);
   fx.capital += moved * 1.05; fx.cash -= moved;
-  fx.energy += a.rest * 25;  fx.mom -= a.rest * 2;
+  fx.energy += a.rest * 26;  fx.mom -= a.rest * 2;
 
   // capital compounds, momentum decays, low energy taxes everything
   fx.capital += S.capital * 0.09;
@@ -320,7 +407,7 @@ $('#btnRun').addEventListener('click', () => {
 
   S.q++;
   setTimeout(nextQuarter, reduceMotion ? 0 : 420);
-});
+}
 
 /* ============================================================
    stats, portrait, log
@@ -331,9 +418,14 @@ function apply(fx) {
   paintPortrait();
 }
 
+const _lastMeter = {};
 function paintMeters() {
   $$('.meter').forEach((m) => {
     const k = m.dataset.k, v = S[k];
+    if (_lastMeter[k] !== undefined && _lastMeter[k] !== v && !reduceMotion) {
+      m.classList.remove('bump'); void m.offsetWidth; m.classList.add('bump');
+    }
+    _lastMeter[k] = v;
     m.querySelector('i').style.width = v + '%';
     m.querySelector('b').textContent = k === 'cash' || k === 'capital' ? '€' + v + 'k' : v;
     m.classList.toggle('low', v <= 20);
@@ -414,7 +506,8 @@ function finish() {
     <div><span>YOU PUT IN</span><b>€${invested}k</b></div>
     <div><span>YOU GET BACK</span><b class="hl">€${out}k</b></div>
     <div><span>MULTIPLE</span><b>${e.mult}×</b></div>
-    <div><span>SHE ENDS AT</span><b>${S.cred} cred · ${S.mom} mom · ${S.energy} energy</b></div>`;
+    <div><span>SHE ENDS AT</span><b>${S.cred} cred · ${S.mom} mom · ${S.energy} energy</b></div>
+    ${S.arcade ? `<div><span>GOT PAST YOU</span><b>${S.leaks} drain${S.leaks === 1 ? '' : 's'}</b></div>` : ''}`;
 
   const seen = getSeen();
   if (!seen.includes(e.id)) { seen.push(e.id); try { localStorage.setItem(SEEN_KEY, JSON.stringify(seen)); } catch {} }
