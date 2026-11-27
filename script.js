@@ -20,6 +20,15 @@ if (toggle) {
 const reduceMotion =window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const finePointer = window.matchMedia('(pointer: fine)').matches;
 
+/* ---------- looping clips: respect reduced motion, save data off-screen ---------- */
+document.querySelectorAll('video[autoplay]').forEach((v) => {
+  if (reduceMotion) { v.removeAttribute('autoplay'); v.pause(); v.controls = true; return; }
+  if (!('IntersectionObserver' in window)) return;
+  new IntersectionObserver((es) => es.forEach((e) => {
+    if (e.isIntersecting) v.play().catch(() => {}); else v.pause();
+  }), { threshold: 0.25 }).observe(v);
+});
+
 /* ---------- scroll reveal ---------- */
 const revealEls = document.querySelectorAll('.reveal');
 if ('IntersectionObserver' in window && !reduceMotion) {
