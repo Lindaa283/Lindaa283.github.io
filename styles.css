@@ -1055,3 +1055,74 @@ h1 .stop { color: var(--rose); }
   .note { grid-template-columns: 1fr; gap: .6rem; }
   .note time { padding-top: 0; }
 }
+
+/* ============================================================
+   v8: the hero terminal, now typeable
+   ============================================================ */
+.term {
+  position: relative; display: block; width: min(560px, 100%);
+  margin: 0 0 1.4rem; padding: .6rem .9rem;
+  font-family: var(--mono); font-size: .82rem; line-height: 1.7;
+  color: #e8dcf5; background: var(--night);
+  border-radius: 10px; box-shadow: 4px 4px 0 var(--pink);
+  cursor: text; max-height: 300px; overflow-y: auto;
+  transition: box-shadow .3s, max-height .4s;
+  scrollbar-width: thin; scrollbar-color: rgba(255,158,196,.4) transparent;
+}
+.term:hover, .term.live { box-shadow: 4px 4px 0 var(--rose), 0 0 34px rgba(255,79,134,.28); }
+.term::-webkit-scrollbar { width: 6px; }
+.term::-webkit-scrollbar-thumb { background: rgba(255,158,196,.4); border-radius: 99px; }
+
+.term-out { list-style: none; margin: 0; padding: 0; }
+.term-out li { padding: .1rem 0; word-break: break-word; }
+.term-out .cmd { color: var(--pink); }
+.term-out .boot { color: var(--lav); }
+.term-out .warn { color: #ff8585; }
+.term-out .f { color: var(--cyan); }
+.term-out .pink { color: var(--pink); }
+.term-out .cyan { color: var(--cyan); }
+.term-out b { color: #fff; }
+
+.term-line { display: flex; align-items: baseline; gap: .4rem; margin: 0; }
+.term .prompt { color: var(--pink); flex: 0 0 auto; }
+.term .caret { color: var(--cyan); animation: blink 1s steps(1) infinite; }
+.term.live .typed, .term.live .caret { display: none; }
+
+#termIn {
+  display: none; flex: 1 1 auto; min-width: 0;
+  border: 0; outline: 0; background: none; padding: 0;
+  font: inherit; color: #fff; caret-color: var(--cyan);
+}
+.term.live #termIn { display: block; }
+
+.term-hint {
+  position: absolute; right: .7rem; top: .55rem;
+  font-size: .6rem; letter-spacing: .14em; text-transform: uppercase;
+  color: rgba(255,158,196,.55); pointer-events: none;
+  animation: hintPulse 2.6s ease-in-out infinite;
+}
+@keyframes hintPulse { 50% { opacity: .35; } }
+
+/* a colour wash when an easter egg fires */
+.term-flash {
+  position: fixed; inset: 0; z-index: 70; pointer-events: none;
+  background: radial-gradient(circle at 30% 40%, var(--f), transparent 60%);
+  opacity: 0; animation: termFlash .9s ease-out forwards;
+}
+@keyframes termFlash { 15% { opacity: .3; } 100% { opacity: 0; } }
+
+/* konami: everything a little louder */
+html.konami { --rose: #ff1f6d; --pink: #ff6fb0; --cyan: #3dd5ff; }
+html.konami .blob { filter: blur(50px); opacity: .8; }
+html.konami .ribbon-track, html.konami .tape-track { animation-duration: 9s; }
+html.konami .shimmer { animation-duration: 1.6s; }
+html.konami .grain { opacity: .9; }
+
+@media (max-width: 560px) {
+  .term { font-size: .74rem; max-height: 220px; }
+  .term-hint { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .term-hint, .term-flash { animation: none; }
+  .term-flash { display: none; }
+}

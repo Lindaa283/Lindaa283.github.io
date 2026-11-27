@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -21,7 +21,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Archivo:wght@400;600;800;900&family=Space+Mono:wght@400;700&display=swap">
-  <link rel="stylesheet" href="styles.css?v=12">
+  <link rel="stylesheet" href="styles.css?v=13">
   <title>Linda — building in public</title>
   <script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.dataset.theme='dark'}catch(e){}</script>
 </head>
@@ -58,7 +58,15 @@
       </div>
       <div class="hero-copy">
         <p class="eyebrow">21 · pharma × AI × building</p>
-        <p class="terminal" aria-hidden="true"><span class="prompt">&gt;</span> <span class="typed" data-lines="boot linda.exe|learning in public since 2025|refuse_to_be_an_NPC = true|quest: road to YC"></span><span class="caret">▌</span></p>
+        <div class="term" id="term">
+          <ol class="term-out" id="termOut" aria-live="polite"></ol>
+          <p class="term-line">
+            <span class="prompt">&gt;</span>
+            <span class="typed" data-lines="boot linda.exe|learning in public since 2025|refuse_to_be_an_NPC = true|try typing: help"></span><span class="caret">█</span>
+            <input id="termIn" type="text" spellcheck="false" autocomplete="off" aria-label="Type a command. Try: help">
+          </p>
+          <span class="term-hint" id="termHint">click to type</span>
+        </div>
         <h1>Pharma student.<br>Shop owner. Still deciding<br>which is the <em class="shimmer">day job</em><span class="stop">.</span></h1>
         <p class="lede">I’m Linda. I study pharmaceutical science and build AI products on the side and on purpose: an AI tools shop, research bots, automation for my own life. Founder in training, on the road to YC, learning everything in public.</p>
         <div class="actions">
@@ -285,6 +293,6 @@
     </section>
   </main>
   <footer><span>© <span id="year">2026</span> Linda</span><span>built and broken in public</span></footer>
-  <script src="script.js?v=12" defer></script>
+  <script src="script.js?v=13" defer></script>
 </body>
 </html>

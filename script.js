@@ -335,3 +335,154 @@ if ('IntersectionObserver' in window && !reduceMotion) {
     }
   }
 })();
+
+/* ============================================================
+   The hero terminal is real: click it and type.
+   Idles with the old typing animation until someone takes it over.
+   ============================================================ */
+(() => {
+  const term = document.getElementById('term');
+  const out = document.getElementById('termOut');
+  const input = document.getElementById('termIn');
+  const hint = document.getElementById('termHint');
+  if (!term || !input) return;
+
+  const FILES = ['about.txt', 'notes/', 'projects/', 'lab/', 'receipts.txt', '.secrets'];
+
+  const say = (text, cls = '') => {
+    const li = document.createElement('li');
+    if (cls) li.className = cls;
+    li.innerHTML = text;
+    out.appendChild(li);
+    term.scrollTop = term.scrollHeight;
+  };
+  const echo = (cmd) => say(`<span class="prompt">&gt;</span> ${esc(cmd)}`, 'cmd');
+  const esc = (t) => t.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  const go = (sel) => {
+    const el = document.querySelector(sel);
+    if (el) el.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' });
+  };
+
+  const COMMANDS = {
+    help: () => say([
+      'whoami      who is running this',
+      'ls          what is in here',
+      'cat &lt;file&gt;  read one of them',
+      'projects    jump to the things I ship',
+      'notes       jump to what I am writing',
+      'lab         jump to the research',
+      'game        a founder sim, 6 endings',
+      'shop        the AI store',
+      'x           where the short version lives',
+      'theme       flip the lights',
+      'clear       wipe this',
+    ].join('<br>')),
+
+    whoami: () => say('Linda. 21. Pharmaceutical science by day, AI shop and research tools by night, writing it all down either way. Currently applying to things that are hard to get into.'),
+
+    ls: () => say(FILES.map((f) => `<span class="f">${f}</span>`).join('&nbsp;&nbsp;')),
+
+    cat: (arg) => {
+      const f = (arg || '').replace(/\/$/, '');
+      const BODY = {
+        'about.txt': 'An introvert who decided that staying quiet was the more expensive option.',
+        'receipts.txt': 'iGEM gold. 7 public repos. One shop that takes crypto. 49 tests on the model I am proudest of. One test set, scored exactly once.',
+        '.secrets': 'Nice try. <span class="warn">Permission denied.</span> (There is one in here somewhere though.)',
+        'notes': 'Use <b>notes</b> to go there, or <b>cat</b> a file.',
+        'projects': 'Use <b>projects</b> to go there.',
+        'lab': 'Use <b>lab</b> to go there.',
+      };
+      if (!f) return say('cat: give me a filename. Try <b>ls</b>.', 'warn');
+      if (BODY[f]) return say(BODY[f]);
+      say(`cat: ${esc(f)}: no such file`, 'warn');
+    },
+
+    projects: () => { say('→ products'); go('#products'); },
+    notes:    () => { say('→ notes'); go('#notes'); },
+    lab:      () => { say('→ lab'); go('#lab'); },
+    game:     () => { say('Loading BACK LINDA…'); setTimeout(() => (location.href = 'game.html'), 500); },
+    shop:     () => { say('→ lindanext.com (opens in a new tab)'); window.open('https://lindanext.com', '_blank', 'noreferrer'); },
+    x:        () => { say('→ @wongyong_fan (opens in a new tab)'); window.open('https://x.com/wongyong_fan', '_blank', 'noreferrer'); },
+    theme:    () => { document.querySelector('.theme-toggle')?.click(); say('lights flipped.'); },
+    clear:    () => { out.innerHTML = ''; },
+
+    /* ---- easter eggs ---- */
+    sudo: (arg) => {
+      if (/rockstar/i.test(arg || '')) return say('You are not in the sudoers file. <span class="warn">Yet.</span>');
+      say(`<span class="warn">Permission denied.</span> Nobody here grants themselves permission.`);
+    },
+    'silver': () => eggWolf(),
+    'wolf': () => eggWolf(),
+    teto: () => { say('<span class="pink">An internet joke that people kept singing until it was real.</span>'); flash('#ff3d6e'); },
+    npc: () => say('Not a chance.'),
+    hire: () => say('Open to a fully funded PhD, and to talking to anyone building at the pharma/AI edge. <b>x</b> opens the DMs.'),
+    yc: () => say('Applying. Ask me again in a batch or two.'),
+    money: () => say('Not on this page any more. Ask me in person.'),
+    exit: () => say('There is no exit. You are already on the site.'),
+    rm: () => say('<span class="warn">rm: operation not permitted.</span> I built this one by hand.'),
+  };
+  const ALIAS = { '?': 'help', man: 'help', dir: 'ls', 'cd': 'ls', about: 'whoami', who: 'whoami', contact: 'x', twitter: 'x', play: 'game' };
+
+  function eggWolf() {
+    say('<span class="cyan">Reads the rules. Finds the exploit. Clears the game.</span>');
+    flash('#5fd8ff');
+  }
+  function flash(colour) {
+    if (reduceMotion) return;
+    const f = document.createElement('div');
+    f.className = 'term-flash';
+    f.style.setProperty('--f', colour);
+    document.body.appendChild(f);
+    setTimeout(() => f.remove(), 900);
+  }
+
+  /* ---- idle typing animation, handed over on first use ---- */
+  let live = false;
+  const typed = term.querySelector('.typed');
+  function wake() {
+    if (live) return;
+    live = true;
+    term.classList.add('live');
+    if (typed) typed.textContent = '';
+    if (hint) hint.remove();
+    say('linda.exe — type <b>help</b> for the list.', 'boot');
+  }
+
+  term.addEventListener('click', () => { wake(); input.focus(); });
+  input.addEventListener('focus', wake);
+
+  const history = [];
+  let hIdx = 0;
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowUp' && history.length) {
+      e.preventDefault(); hIdx = Math.max(0, hIdx - 1); input.value = history[hIdx] || '';
+    } else if (e.key === 'ArrowDown' && history.length) {
+      e.preventDefault(); hIdx = Math.min(history.length, hIdx + 1); input.value = history[hIdx] || '';
+    } else if (e.key === 'Enter') {
+      const raw = input.value.trim();
+      input.value = '';
+      if (!raw) return;
+      history.push(raw); hIdx = history.length;
+      echo(raw);
+      const [head, ...rest] = raw.split(/\s+/);
+      const key = ALIAS[head.toLowerCase()] || head.toLowerCase();
+      const fn = COMMANDS[key];
+      if (fn) fn(rest.join(' '));
+      else say(`${esc(head)}: command not found. Try <b>help</b>.`, 'warn');
+    }
+  });
+
+  /* ---- Konami ---- */
+  const KON = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+  let kp = 0;
+  addEventListener('keydown', (e) => {
+    kp = (e.key === KON[kp] || e.key.toLowerCase() === KON[kp]) ? kp + 1 : 0;
+    if (kp === KON.length) {
+      kp = 0;
+      document.documentElement.classList.toggle('konami');
+      wake(); input.focus();
+      say('<span class="pink">◆ cheat accepted.</span> Everything is a little louder now.', 'boot');
+      flash('#ff4f86');
+    }
+  });
+})();
