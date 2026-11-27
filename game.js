@@ -30,11 +30,11 @@ const Snd = {
 
 /* ---------- the five things she can spend a quarter on ---------- */
 const TRACKS = [
-  { k: 'lab',    name: 'LAB',    zh: '实验室', hint: 'Chips, assays, papers. Slow, compounding credibility.' },
-  { k: 'shop',   name: 'SHOP',   zh: '小店',   hint: 'The AI store. Cash now, costs energy.' },
-  { k: 'build',  name: 'BUILD',  zh: '造东西', hint: 'Bots, tools, repos. Momentum and credibility.' },
-  { k: 'market', name: 'MARKET', zh: '美股',   hint: 'Move cash into positions. Capital compounds.' },
-  { k: 'rest',   name: 'REST',   zh: '休息',   hint: 'Sleep, Dublin, GTA. Buys back energy.' },
+  { k: 'lab',    name: 'LAB',    sub: 'the bench',  hint: 'Chips, assays, papers. Slow, compounding credibility.' },
+  { k: 'shop',   name: 'SHOP',   sub: 'the store',  hint: 'The AI store. Cash now, costs energy.' },
+  { k: 'build',  name: 'BUILD',  sub: 'ship it',    hint: 'Bots, tools, repos. Momentum and credibility.' },
+  { k: 'market', name: 'MARKET', sub: 'compound',   hint: 'Move cash into positions. Capital compounds.' },
+  { k: 'rest',   name: 'REST',   sub: 'log off',    hint: 'Sleep, friends, GTA. Buys back energy.' },
 ];
 
 /* ---------- events: drawn from her real trajectory ---------- */
@@ -85,7 +85,7 @@ const EVENTS = [
     ],
   },
   {
-    tag: 'Q6 · THE OFFER', title: 'A Dublin pharma group offers an internship.',
+    tag: 'Q6 · THE OFFER', title: 'A pharma group offers an internship.',
     body: 'Real money, real reference, real QC lab. It is also forty hours a week of someone else deciding what you work on, in the exact quarter YC applications open.',
     choices: [
       { t: 'Take the job. Credentials compound too.', fx: { cash: 14, cred: 7, mom: -14, energy: -5 }, say: 'The safe track is not stupid. It is just slow.' },
@@ -133,7 +133,7 @@ const ENDINGS = [
     body: 'Everything was working. That was the problem — nothing felt safe to drop. The shop goes unanswered for three weeks, the lab notebook stops, and the posting stops first of all. She comes back, because she is 21 and that is what 21 does. But the quarter you lost here was the cheapest thing you could have bought with a REST token.',
   },
   {
-    id: 'capitalist', name: '美女悍匪 · THE PRETTY CAPITALIST', rank: 'BEST REALISTIC ENDING', img: 'img/fig-03.jpg',
+    id: 'capitalist', name: 'THE PRETTY CAPITALIST', rank: 'BEST REALISTIC ENDING', img: 'img/fig-03.jpg',
     stat: 'capital',
     mult: 12,
     body: 'She did the unglamorous thing: she kept the boring positions, kept the shop alive, and kept shipping. By 25 the capital pays a salary she never has to ask anyone for. She still does the science, but now she funds it. The costume was never a distraction — it was the part of the interface she controlled.',
@@ -342,7 +342,7 @@ function openAlloc() {
     const row = document.createElement('div');
     row.className = 'track';
     row.innerHTML = `
-      <div class="t-head"><b>${t.name}</b><span lang="zh">${t.zh}</span></div>
+      <div class="t-head"><b>${t.name}</b><span>${t.sub}</span></div>
       <p class="t-hint">${t.hint}</p>
       <div class="t-ctl">
         <button type="button" class="t-btn" data-d="-1" aria-label="less ${t.name}">−</button>
