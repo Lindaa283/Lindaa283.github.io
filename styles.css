@@ -837,3 +837,186 @@ nav a, .nav-contact { font-family: var(--mono); letter-spacing: .08em; }
   .pc-text i { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .play-cta::after { display: none; } }
+
+/* ============================================================
+   v6: the motion layer
+   Scroll-driven animations where the browser supports them (they run off the
+   main thread, which is why they feel expensive); an IntersectionObserver
+   fallback adds .seen elsewhere. Everything here is off under reduced motion.
+   ============================================================ */
+
+/* ---- kill the leftovers of the old decorative pass ---- */
+.sparkles, .trail, .pix, .stars { display: none !important; }
+h1 .stop { color: var(--rose); }
+
+/* ---- scroll progress ---- */
+.scroll-progress { position: fixed; z-index: 60; inset: 0 0 auto 0; height: 2px; pointer-events: none; }
+.scroll-progress i {
+  display: block; height: 100%; transform-origin: 0 50%; transform: scaleX(0);
+  background: linear-gradient(90deg, var(--rose), var(--lav) 55%, var(--cyan));
+}
+@supports (animation-timeline: scroll()) {
+  .scroll-progress i {
+    animation: progress linear both;
+    animation-timeline: scroll(root block);
+  }
+}
+@keyframes progress { to { transform: scaleX(1); } }
+
+/* ---- custom cursor ---- */
+.cursor { position: fixed; z-index: 80; top: 0; left: 0; pointer-events: none; mix-blend-mode: difference; will-change: transform; }
+.cursor i {
+  display: block; width: 26px; height: 26px; margin: -13px 0 0 -13px;
+  border: 1px solid #fff; border-radius: 50%;
+  transition: width .32s cubic-bezier(.2,.8,.2,1), height .32s cubic-bezier(.2,.8,.2,1),
+              margin .32s cubic-bezier(.2,.8,.2,1), background-color .32s, opacity .3s;
+  opacity: 0;
+}
+.cursor.on i { opacity: 1; }
+.cursor.hot i { width: 56px; height: 56px; margin: -28px 0 0 -28px; background: rgba(255,255,255,.12); }
+@media (hover: none), (pointer: coarse) { .cursor { display: none; } }
+
+/* ============================================================
+   reveals — a line sliding up from behind a mask, not a fade
+   ============================================================ */
+.ln { display: block; overflow: hidden; }
+.ln > span {
+  display: block;
+  transform: translateY(105%) rotate(2deg);
+  opacity: 0;
+}
+.seen .ln > span, .ln.seen > span { animation: lineUp .95s cubic-bezier(.16,1,.3,1) both; }
+@keyframes lineUp { to { transform: none; opacity: 1; } }
+.ln:nth-child(2) > span { animation-delay: .07s; }
+.ln:nth-child(3) > span { animation-delay: .14s; }
+.ln:nth-child(4) > span { animation-delay: .21s; }
+
+/* generic block reveal, now a rise-and-settle rather than a fade */
+.reveal { opacity: 0; transform: translateY(26px); }
+.reveal.in, .reveal.seen { animation: riseIn 1s cubic-bezier(.16,1,.3,1) both; }
+@keyframes riseIn { to { opacity: 1; transform: none; } }
+
+@supports (animation-timeline: view()) {
+  .reveal { animation: riseIn 1s cubic-bezier(.16,1,.3,1) both; animation-timeline: view(); animation-range: entry 4% cover 26%; }
+  .ln > span { animation: lineUp .9s cubic-bezier(.16,1,.3,1) both; animation-timeline: view(); animation-range: entry 2% cover 24%; }
+  .project.reveal { animation-range: entry 0% cover 22%; }
+}
+
+/* ============================================================
+   images — a wipe that uncovers, with the photo drifting behind it
+   ============================================================ */
+.wipe { position: relative; overflow: hidden; clip-path: inset(0 0 100% 0); }
+.wipe > img, .wipe > video { transform: scale(1.18); }
+.wipe.seen { animation: wipeOpen 1.2s cubic-bezier(.16,1,.3,1) both; }
+.wipe.seen > img, .wipe.seen > video { animation: settle 1.5s cubic-bezier(.16,1,.3,1) both; }
+@keyframes wipeOpen { to { clip-path: inset(0 0 0 0); } }
+@keyframes settle { to { transform: scale(1); } }
+
+@supports (animation-timeline: view()) {
+  .wipe { animation: wipeOpen 1.2s cubic-bezier(.16,1,.3,1) both; animation-timeline: view(); animation-range: entry 0% cover 26%; }
+  .wipe > img, .wipe > video { animation: settle 1.4s cubic-bezier(.16,1,.3,1) both; animation-timeline: view(); animation-range: entry 0% cover 34%; }
+  /* slow parallax drift on the editorial plates */
+  .plate figure img, .sheet-grid img { animation: drift linear both; animation-timeline: view(); animation-range: cover 0% cover 100%; }
+  @keyframes drift { from { transform: translateY(-4%) scale(1.1); } to { transform: translateY(4%) scale(1.1); } }
+  .plate figure:hover img, .sheet-grid img:hover { animation-play-state: paused; }
+}
+
+/* ============================================================
+   section headings — the rule draws itself across
+   ============================================================ */
+.section-head::after, .faces-head::after {
+  content: ""; display: block; height: 1px; margin-top: 2rem;
+  background: linear-gradient(90deg, var(--rose), transparent);
+  transform: scaleX(0); transform-origin: 0 50%;
+}
+.section-head.seen::after, .faces-head.seen::after { animation: ruleOut 1.4s cubic-bezier(.16,1,.3,1) .15s both; }
+@keyframes ruleOut { to { transform: scaleX(1); } }
+@supports (animation-timeline: view()) {
+  .section-head::after, .faces-head::after {
+    animation: ruleOut 1.4s cubic-bezier(.16,1,.3,1) both;
+    animation-timeline: view(); animation-range: entry 10% cover 30%;
+  }
+}
+
+/* ============================================================
+   the ribbon reacts to scroll speed
+   ============================================================ */
+.ribbon { transform: rotate(calc(-1.5deg + var(--vel, 0) * 1.6deg)); transition: transform .5s cubic-bezier(.2,.8,.2,1); }
+.ribbon-track { animation-duration: calc(32s / max(0.25, var(--rush, 1))); }
+.tape-track { animation-duration: calc(30s / max(0.25, var(--rush, 1))); }
+
+/* ============================================================
+   hero: the card floats against the scroll
+   ============================================================ */
+@supports (animation-timeline: scroll()) {
+  .hero-visual { animation: heroLift linear both; animation-timeline: scroll(root block); animation-range: 0 90vh; }
+  @keyframes heroLift { to { transform: translateY(-5%) scale(.97); } }
+  .masthead { animation: mastFade linear both; animation-timeline: scroll(root block); animation-range: 0 40vh; }
+  @keyframes mastFade { to { opacity: .25; } }
+}
+
+/* ---- links get a wipe underline instead of a colour change ---- */
+.project a, .mini a, .end-foot a, .lab-item h3 { position: relative; }
+.project a, .mini a { border-bottom: 0; }
+.project a::before, .mini a::before {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -3px; height: 1.5px;
+  background: currentColor; transform: scaleX(0); transform-origin: 100% 50%;
+  transition: transform .5s cubic-bezier(.16,1,.3,1);
+}
+.project a:hover::before, .mini a:hover::before { transform: scaleX(1); transform-origin: 0 50%; }
+
+/* ---- buttons: the fill sweeps in ---- */
+.button { isolation: isolate; }
+.secondary::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; background: var(--ink);
+  transform: scaleY(0); transform-origin: 50% 100%; transition: transform .45s cubic-bezier(.16,1,.3,1);
+}
+.secondary:hover::before { transform: scaleY(1); transform-origin: 50% 0; }
+.secondary:hover { color: var(--paper); border-color: var(--ink); background: transparent; }
+
+/* ---- project cards: a quieter lift, no 3D tilt ---- */
+.project { transition: transform .6s cubic-bezier(.16,1,.3,1), box-shadow .6s, background-color .5s; }
+.project:hover { transform: translateY(-6px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-progress, .cursor { display: none; }
+  .ln > span, .reveal, .wipe, .wipe > img, .wipe > video,
+  .section-head::after, .faces-head::after,
+  .plate figure img, .sheet-grid img, .hero-visual, .masthead {
+    animation: none !important; opacity: 1 !important; transform: none !important; clip-path: none !important;
+  }
+}
+
+/* The hero is already in view at load, so a view() timeline would leave it
+   frozen part-way through until the visitor scrolls. Play it on load. */
+@supports (animation-timeline: view()) {
+  .hero .ln > span, .hero .reveal, .hero .wipe, .hero .wipe > img {
+    animation-timeline: auto;
+  }
+  .hero .ln > span { animation-duration: 1.05s; }
+  .hero h1 .ln:nth-child(1) > span { animation-delay: .10s; }
+  .hero h1 .ln:nth-child(2) > span { animation-delay: .19s; }
+  .hero h1 .ln:nth-child(3) > span { animation-delay: .28s; }
+  .hero h1 .ln:nth-child(4) > span { animation-delay: .37s; }
+  .hero .wipe { animation-timeline: auto; animation-delay: .35s; }
+  .hero .wipe > img { animation-timeline: auto; animation-delay: .35s; }
+}
+.hero .zh-line, .hero .lede, .hero .actions, .hero .play-cta, .hero .terminal, .hero .eyebrow {
+  animation: riseIn .9s cubic-bezier(.16,1,.3,1) both;
+}
+.hero .eyebrow   { animation-delay: .05s; }
+.hero .terminal  { animation-delay: .12s; }
+.hero .zh-line   { animation-delay: .52s; }
+.hero .lede      { animation-delay: .60s; }
+.hero .actions   { animation-delay: .68s; }
+.hero .play-cta  { animation-delay: .76s; }
+@media (prefers-reduced-motion: reduce) {
+  .hero .zh-line, .hero .lede, .hero .actions, .hero .play-cta, .hero .terminal, .hero .eyebrow { animation: none; }
+}
+
+/* No flash of un-split text: hide the headings only while JS is going to
+   rewrite them, and only when JS is actually running. */
+.js h1, .js .section-head h2, .js .faces-head h2, .js .manifesto h2,
+.js .closing h2, .js .read-sec h2 { opacity: 0; }
+.js h1.ready, .js .section-head h2.ready, .js .faces-head h2.ready,
+.js .manifesto h2.ready, .js .closing h2.ready, .js .read-sec h2.ready { opacity: 1; }

@@ -13,23 +13,24 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Archivo:wght@400;600;800;900&family=Space+Mono:wght@400;700&display=swap">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=10">
   <title>Linda — a pretty shell, a dangerous ambition</title>
   <script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.dataset.theme='dark'}catch(e){}</script>
 </head>
 <body>
+  <div class="scroll-progress" aria-hidden="true"><i></i></div>
+  <div class="cursor" aria-hidden="true"><i></i></div>
   <a class="skip-link" href="#main">Skip to content</a>
 
   <div class="bg" aria-hidden="true">
     <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
     <div class="grid-floor"></div>
   </div>
-  <div class="sparkles" aria-hidden="true"></div>
   <div class="grain" aria-hidden="true"></div>
   <div class="spine" aria-hidden="true"><span>ISSUE 01</span><i></i><span>LINDA / 林</span><i></i><span>AW 26</span></div>
 
   <header class="site-header">
-    <a class="wordmark glitch" data-text="LINDA." href="#top" aria-label="Linda, home">LINDA<span>.</span></a>
+    <a class="wordmark" href="#top" aria-label="Linda, home">LINDA<span>.</span></a>
     <nav aria-label="Primary navigation">
       <a href="#products">Products</a><a href="#lab">Lab</a><a href="#read">The read</a><a href="#ladder">Class</a><a class="nav-play" href="game.html">▶ Play</a>
     </nav>
@@ -48,9 +49,9 @@
         <span>NO. 01</span><span>DUBLIN ⇄ NANJING</span><span class="mast-mid">FOUNDER IN TRAINING</span><span>AW 26</span><span>€ ∞</span>
       </div>
       <div class="hero-copy">
-        <p class="eyebrow"><span class="pix"></span> 21 · Dublin · pharma × AI × capital</p>
+        <p class="eyebrow">21 · Dublin · pharma × AI × capital</p>
         <p class="terminal" aria-hidden="true"><span class="prompt">&gt;</span> <span class="typed" data-lines="boot linda.exe|mode: 美女悍匪 / 漂亮资本家|refuse_to_be_an_NPC = true|quest: road to YC ✦"></span><span class="caret">▌</span></p>
-        <h1>A pretty shell.<br>A <em class="shimmer">dangerous</em> ambition<span class="heart">.</span></h1>
+        <h1>A pretty shell.<br>A <em class="shimmer">dangerous</em> ambition<span class="stop">.</span></h1>
         <p class="zh-line" lang="zh">21 岁少女的壳子，装着野心、科技、财富、暗黑与冒险。</p>
         <p class="lede">I’m Linda (Xiaofan Wang), a pharma student in Dublin who builds AI products on the side and on purpose: an AI tools shop, research bots, automation for my own life. Founder in training, on the road to YC, learning everything in public.</p>
         <div class="actions">
@@ -70,7 +71,7 @@
         <div class="card holo">
           <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
           <div class="card-top"><span>PLAYER_PROFILE</span><span class="live">● LIVE</span></div>
-          <div class="avatar">
+          <div class="avatar wipe">
             <img src="img/hero-portrait.jpg" alt="" width="900" height="600" fetchpriority="high">
             <span class="avatar-tag">LV.21</span>
           </div>
@@ -106,7 +107,7 @@
 
     <!-- ================= PRODUCTS ================= -->
     <section class="section" id="products">
-      <div class="section-head reveal"><p class="eyebrow"><span class="pix"></span> Products</p><h2>Things I ship.<br><span class="sub" lang="zh">先做出来，再搞明白。</span></h2></div>
+      <div class="section-head reveal"><p class="eyebrow">Products</p><h2>Things I ship.<br><span class="sub" lang="zh">先做出来，再搞明白。</span></h2></div>
       <div class="project-grid">
         <article class="project feature reveal tilt">
           <div class="scan" aria-hidden="true"></div>
@@ -130,7 +131,7 @@
 
     <!-- ================= LAB ================= -->
     <section class="section lab" id="lab">
-      <div class="section-head reveal"><p class="eyebrow"><span class="pix"></span> The lab</p><h2>The white side: real science.<br><span class="sub">Labelled honestly, every time.</span></h2></div>
+      <div class="section-head reveal"><p class="eyebrow">The lab</p><h2>The white side: real science.<br><span class="sub">Labelled honestly, every time.</span></h2></div>
       <div class="lab-grid">
         <a class="lab-item reveal" href="https://github.com/Lindaa283/admet-logd-baseline" target="_blank" rel="noreferrer"><span class="lvl ok">reproducible</span><h3>logD7.4 auditable baseline</h3><p>ADMET machine-learning baseline with 49 tests and an honest test-set write-up.</p></a>
         <a class="lab-item reveal" href="https://github.com/Lindaa283/egfr-crossspecies-epitope" target="_blank" rel="noreferrer"><span class="lvl ok">reproducible</span><h3>EGFR cross-species epitope</h3><p>Human/mouse domain III conservation mapped onto the cetuximab interface for conditional binder design.</p></a>
@@ -144,7 +145,7 @@
 
     <!-- ================= TWO FACES ================= -->
     <section class="faces" id="faces">
-      <div class="faces-head reveal"><p class="eyebrow"><span class="pix"></span> Two faces</p><h2>白天是乖乖药学生，<br>夜里是<span class="shimmer">美女悍匪</span>。</h2></div>
+      <div class="faces-head reveal"><p class="eyebrow">Two faces</p><h2>白天是乖乖药学生，<br>夜里是<span class="shimmer">美女悍匪</span>。</h2></div>
       <div class="faces-split">
         <div class="face white reveal">
           <p class="face-label">☀ WHITE</p>
@@ -159,10 +160,10 @@
       </div>
 
       <div class="cos reveal">
-        <div class="cos-head"><p class="eyebrow"><span class="pix"></span> Cosplay</p><h3>Two characters I’ve worn, two modes I live in.</h3></div>
+        <div class="cos-head"><p class="eyebrow">Cosplay</p><h3>Two characters I’ve worn, two modes I live in.</h3></div>
         <div class="cos-grid">
           <article class="cos-card teto">
-            <div class="cos-media"><img src="img/cos-01.jpg" alt="Linda in her Kasane Teto costume: red hair, black horns, red and black dress" loading="lazy" width="760" height="950"></div>
+            <div class="cos-media wipe"><img src="img/cos-01.jpg" alt="Linda in her Kasane Teto costume: red hair, black horns, red and black dress" loading="lazy" width="760" height="950"></div>
             <div class="cos-text">
               <p class="cos-tag">MODE 01 · RED DRILLS</p>
               <h4>Kasane Teto</h4>
@@ -170,7 +171,7 @@
             </div>
           </article>
           <article class="cos-card wolf">
-            <div class="cos-media">
+            <div class="cos-media wipe">
               <video src="img/reel.mp4" poster="img/reel-poster.jpg" autoplay muted loop playsinline preload="none" width="640" height="1138" aria-label="Linda in her Silver Wolf costume at a desk setup"></video>
             </div>
             <div class="cos-text">
@@ -182,13 +183,13 @@
         </div>
 
         <div class="plate reveal">
-          <figure><img src="img/noir-01.jpg" alt="Linda in a qipao in a lantern-lit alley" loading="lazy" width="675" height="843"></figure>
+          <figure class="wipe"><img src="img/noir-01.jpg" alt="Linda in a qipao in a lantern-lit alley" loading="lazy" width="675" height="843"></figure>
           <div class="plate-text">
             <p class="cos-tag">MODE 03 · OLD SHANGHAI</p>
             <h4>黑白两道</h4>
             <p>The third costume isn’t from a game. 1930s Shanghai: pearls, a cigarette holder, a back alley. Half socialite, half something you shouldn’t ask about — which is roughly how I think about ambition.</p>
           </div>
-          <figure><img src="img/noir-02.jpg" alt="Linda in a qipao with a fur stole, framed by a moon gate" loading="lazy" width="760" height="950"></figure>
+          <figure class="wipe"><img src="img/noir-02.jpg" alt="Linda in a qipao with a fur stole, framed by a moon gate" loading="lazy" width="760" height="950"></figure>
         </div>
 
         <div class="contact-sheet reveal">
@@ -206,7 +207,7 @@
     <!-- ================= THE READ ================= -->
     <section class="read-sec" id="read">
       <div class="section-head reveal">
-        <p class="eyebrow"><span class="pix"></span> The read</p>
+        <p class="eyebrow">The read</p>
         <h2>They price the shell.<br>I keep the <span class="shimmer">upside</span>.</h2>
       </div>
 
@@ -265,8 +266,8 @@
         </div>
 
         <div class="ladder-copy">
-          <div class="section-head reveal" style="padding-top:0">
-            <p class="eyebrow"><span class="pix"></span> The ladder</p>
+          <div class="section-head reveal">
+            <p class="eyebrow">The ladder</p>
             <h2>Class isn’t a vibe.<br>It’s <span class="shimmer">what pays you</span> while you sleep.</h2>
           </div>
           <p class="ladder-lede reveal">Nobody told me this at school, so I had to go and find it. The question that actually separates people is not how hard you work — it is <em>what you are selling</em>. Drag the handle.</p>
@@ -299,7 +300,7 @@
 
       <div class="market-grid">
         <div class="section-head reveal">
-          <p class="eyebrow"><span class="pix"></span> The market</p>
+          <p class="eyebrow">The market</p>
           <h2>I’m 21.<br>My only real edge is <span class="shimmer">time</span>.</h2>
         </div>
         <div class="market-copy reveal">
@@ -349,8 +350,7 @@
 
     <!-- ================= MANIFESTO ================= -->
     <section class="section manifesto" id="manifesto">
-      <div class="stars" aria-hidden="true"></div>
-      <div class="reveal"><p class="eyebrow"><span class="pix"></span> Manifesto</p><h2>Curious about who writes the rules of the game.</h2></div>
+      <div class="reveal"><p class="eyebrow">Manifesto</p><h2>Curious about who writes the rules of the game.</h2></div>
       <div class="about-copy reveal">
         <p><strong>On class.</strong> I don’t think the interesting question is who has money. It’s who gets to <em>set the terms</em> — and how much of that is inherited story rather than fate. I’d rather learn those rules in public than resent them in private.</p>
         <p><strong>On being read.</strong> Girl, 21, pink, cosplay. That read is not an insult and I don’t need it corrected; I need it <em>priced</em>. Underestimation is a discount, and I am buying.</p>
@@ -374,6 +374,6 @@
     </section>
   </main>
   <footer><span>© <span id="year">2026</span> Linda · Xiaofan Wang</span><span>a pretty shell running on ambition ♡</span></footer>
-  <script src="script.js" defer></script>
+  <script src="script.js?v=10" defer></script>
 </body>
 </html>

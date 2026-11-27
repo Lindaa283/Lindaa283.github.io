@@ -29,25 +29,6 @@ document.querySelectorAll('video[autoplay]').forEach((v) => {
   }), { threshold: 0.25 }).observe(v);
 });
 
-/* ---------- scroll reveal ---------- */
-const revealEls = document.querySelectorAll('.reveal');
-if ('IntersectionObserver' in window && !reduceMotion) {
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach((e) => {
-      if (e.isIntersecting) {
-        e.target.classList.add('in');
-        io.unobserve(e.target);
-      }
-    });
-  }, { threshold: 0.15 });
-  revealEls.forEach((el, i) => {
-    el.style.transitionDelay = (i % 3) * 90 + 'ms';
-    io.observe(el);
-  });
-} else {
-  revealEls.forEach((el) => el.classList.add('in'));
-}
-
 /* ---------- typing terminal ---------- */
 const typed = document.querySelector('.typed');
 if (typed) {
@@ -66,69 +47,6 @@ if (typed) {
     };
     tick();
   }
-}
-
-/* ---------- background sparkles ---------- */
-const sparkleLayer = document.querySelector('.sparkles');
-const glyphs = ['✦', '✧', '♡', '⋆', '+'];
-if (sparkleLayer && !reduceMotion) {
-  for (let i = 0; i < 26; i++) {
-    const s = document.createElement('span');
-    s.className = 'sparkle';
-    s.textContent = glyphs[i % glyphs.length];
-    s.style.left = Math.random() * 100 + '%';
-    s.style.top = Math.random() * 100 + '%';
-    s.style.fontSize = 8 + Math.random() * 14 + 'px';
-    s.style.animationDelay = -Math.random() * 4 + 's';
-    s.style.animationDuration = 2.5 + Math.random() * 3 + 's';
-    sparkleLayer.appendChild(s);
-  }
-}
-
-/* stars in the About section */
-const stars = document.querySelector('.stars');
-if (stars && !reduceMotion) {
-  for (let i = 0; i < 30; i++) {
-    const s = document.createElement('span');
-    s.className = 'star';
-    s.textContent = i % 4 ? '·' : '✦';
-    s.style.left = Math.random() * 100 + '%';
-    s.style.top = Math.random() * 100 + '%';
-    s.style.animationDelay = -Math.random() * 3 + 's';
-    stars.appendChild(s);
-  }
-}
-
-/* ---------- cursor sparkle trail ---------- */
-if (finePointer && !reduceMotion) {
-  let last = 0;
-  window.addEventListener('pointermove', (e) => {
-    const now = performance.now();
-    if (now - last < 45) return;
-    last = now;
-    const t = document.createElement('span');
-    t.className = 'trail';
-    t.textContent = Math.random() > 0.5 ? '✦' : '♡';
-    t.style.left = e.clientX + 'px';
-    t.style.top = e.clientY + 'px';
-    t.style.setProperty('--dx', (Math.random() * 30 - 15) + 'px');
-    t.style.color = ['#ff4f86', '#c3a8ff', '#5fd8ff', '#ff9ec4'][Math.floor(Math.random() * 4)];
-    document.body.appendChild(t);
-    setTimeout(() => t.remove(), 900);
-  }, { passive: true });
-}
-
-/* ---------- 3D tilt on project cards ---------- */
-if (finePointer && !reduceMotion) {
-  document.querySelectorAll('.tilt').forEach((card) => {
-    card.addEventListener('pointermove', (e) => {
-      const r = card.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width - 0.5;
-      const y = (e.clientY - r.top) / r.height - 0.5;
-      card.style.transform = `perspective(900px) rotateY(${x * 6}deg) rotateX(${-y * 6}deg) translateY(-4px)`;
-    });
-    card.addEventListener('pointerleave', () => { card.style.transform = ''; });
-  });
 }
 
 /* ---------- count-up numbers ---------- */
@@ -279,4 +197,141 @@ if ('IntersectionObserver' in window && !reduceMotion) {
     tip.style.left = Math.min(Math.max((x(best.m) / W) * r.width, 70), r.width - 70) + 'px';
   }, { passive: true });
   holder.addEventListener('pointerleave', () => { svg.classList.remove('hovering'); tip.hidden = true; });
+})();
+
+/* ============================================================
+   v6: motion
+   CSS scroll-driven animations do the heavy lifting where they exist.
+   This file only does what CSS cannot: split headings into lines so each
+   can rise from behind its own mask, drive the cursor, read scroll velocity,
+   and stand in with an observer for browsers without view() timelines.
+   ============================================================ */
+(() => {
+  if (reduceMotion) return;
+  const hasTimelines = CSS.supports('animation-timeline: view()');
+  document.documentElement.classList.add('js');
+
+  /* ---------- split headings into masked lines ---------- */
+  const splitLines = (el) => {
+    if (el.dataset.split) return;
+    if (!el.dataset.orig) el.dataset.orig = el.innerHTML;
+    const words = [];
+    el.childNodes.forEach((n) => {
+      if (n.nodeType === 3) {
+        n.textContent.split(/(\s+)/).forEach((w) => w.length && words.push({ t: w }));
+      } else if (n.nodeName === 'BR') {
+        words.push({ br: true });
+      } else {
+        words.push({ el: n });
+      }
+    });
+
+    /* measure where the browser actually breaks, then group by line box */
+    const probe = document.createElement('span');
+    el.textContent = '';
+    const spans = words.map((w) => {
+      if (w.br) { const b = document.createElement('br'); el.appendChild(b); return { br: true, node: b }; }
+      const s = document.createElement('span');
+      s.style.display = 'inline';
+      if (w.el) s.appendChild(w.el); else s.textContent = w.t;
+      el.appendChild(s);
+      return { node: s, ws: !w.el && !w.t.trim() };
+    });
+    probe.remove();
+
+    const lines = [];
+    let cur = [], top = null;
+    spans.forEach((s) => {
+      if (s.br) { lines.push(cur); cur = []; top = null; return; }
+      const t = Math.round(s.node.getBoundingClientRect().top);
+      if (top === null) top = t;
+      if (t > top + 4) { lines.push(cur); cur = []; top = t; }
+      cur.push(s.node);
+    });
+    if (cur.length) lines.push(cur);
+
+    el.textContent = '';
+    lines.forEach((nodes) => {
+      const wrap = document.createElement('span');
+      wrap.className = 'ln';
+      const inner = document.createElement('span');
+      nodes.forEach((n) => inner.appendChild(n));
+      wrap.appendChild(inner);
+      el.appendChild(wrap);
+    });
+    el.dataset.split = '1';
+    el.classList.add('ready');
+  };
+
+  const headings = document.querySelectorAll(
+    'h1, .section-head h2, .faces-head h2, .manifesto h2, .closing h2, .read-sec h2'
+  );
+  const doSplit = () => headings.forEach(splitLines);
+  const reSplit = () => headings.forEach((h) => {
+    if (!h.dataset.orig) return;
+    h.innerHTML = h.dataset.orig;
+    delete h.dataset.split;
+    splitLines(h);
+    h.classList.add('seen', 'ready');
+  });
+  /* Split straight away rather than waiting on webfonts: the headline is the
+     first thing anyone sees and must not be blank while a font downloads.
+     Re-split once the real font is in, because the line breaks move. */
+  doSplit();
+  if (document.fonts) document.fonts.ready.then(reSplit);
+
+  /* resplit on resize, because the line breaks move */
+  let rt;
+  addEventListener('resize', () => {
+    clearTimeout(rt);
+    rt = setTimeout(reSplit, 220);
+  });
+
+  /* ---------- observer fallback where view() timelines are missing ---------- */
+  if (!hasTimelines && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver((es) => es.forEach((e) => {
+      if (e.isIntersecting) { e.target.classList.add('seen'); io.unobserve(e.target); }
+    }), { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+    document.querySelectorAll('.reveal, .wipe, .section-head, .faces-head, h1, .read-sec h2')
+      .forEach((el) => io.observe(el));
+    /* the hero is above the fold: show it immediately */
+    requestAnimationFrame(() => document.querySelectorAll('.hero .reveal, .hero h1').forEach((e) => e.classList.add('seen')));
+  } else {
+    document.querySelectorAll('h1').forEach((h) => h.classList.add('seen'));
+  }
+
+  /* ---------- scroll velocity drives the marquees ---------- */
+  let lastY = scrollY, vel = 0, raf = 0;
+  const onScroll = () => {
+    const y = scrollY;
+    vel = vel * 0.8 + (y - lastY) * 0.2;
+    lastY = y;
+    if (!raf) raf = requestAnimationFrame(() => {
+      raf = 0;
+      const v = Math.max(-1, Math.min(1, vel / 45));
+      document.documentElement.style.setProperty('--vel', v.toFixed(3));
+      document.documentElement.style.setProperty('--rush', (1 + Math.abs(v) * 2.2).toFixed(2));
+    });
+  };
+  addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---------- cursor ---------- */
+  if (matchMedia('(pointer: fine)').matches) {
+    const cur = document.querySelector('.cursor');
+    if (cur) {
+      let x = innerWidth / 2, y = innerHeight / 2, tx = x, ty = y, on = false;
+      addEventListener('pointermove', (e) => {
+        tx = e.clientX; ty = e.clientY;
+        if (!on) { on = true; cur.classList.add('on'); x = tx; y = ty; }
+        const hot = e.target.closest('a, button, .read-card, .rung, input[type="range"], .cos-card, .sheet-grid img');
+        cur.classList.toggle('hot', !!hot);
+      }, { passive: true });
+      addEventListener('pointerleave', () => { on = false; cur.classList.remove('on'); });
+      (function loop() {
+        x += (tx - x) * 0.18; y += (ty - y) * 0.18;
+        cur.style.transform = `translate3d(${x}px,${y}px,0)`;
+        requestAnimationFrame(loop);
+      })();
+    }
+  }
 })();
