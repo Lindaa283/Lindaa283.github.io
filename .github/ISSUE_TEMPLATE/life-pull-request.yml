@@ -1,0 +1,58 @@
+name: Life Pull Request
+description: Propose a collaboration, opportunity, introduction or useful experiment.
+title: "[Life PR]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for bringing a possibility. Keep this public issue free of private, financial, identity, immigration, medical, relationship or location details.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of proposal is this?
+      options:
+        - Research or scientific collaboration
+        - Product or startup experiment
+        - Work, internship or project opportunity
+        - Mentorship or knowledge exchange
+        - Creative or community collaboration
+        - Wild card
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Who are you, what are you working on, and why might this be a fit?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: The proposal
+      description: Describe the concrete possibility. Avoid vague networking requests.
+    validations:
+      required: true
+  - type: textarea
+    id: exchange
+    attributes:
+      label: What each side contributes
+      description: What would you contribute, and what would you hope Linda contributes?
+    validations:
+      required: true
+  - type: textarea
+    id: first-step
+    attributes:
+      label: Smallest reversible next step
+      description: Suggest one low-risk step that could test the fit.
+      placeholder: For example, a 20-minute public project review or a small scoped task.
+    validations:
+      required: true
+  - type: checkboxes
+    id: boundaries
+    attributes:
+      label: Boundaries
+      options:
+        - label: I have not included sensitive personal information, and I understand that this proposal creates no obligation.
+          required: true
+
