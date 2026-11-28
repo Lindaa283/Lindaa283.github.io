@@ -1,12 +1,12 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#fff4f8">
-  <meta name="description" content="Linda — pharma student, runs an AI shop, builds research tools, writes down what breaks.">
-  <meta property="og:title" content="Linda — building in public">
-  <meta property="og:description" content="Pharma student. Runs an AI shop. Builds research tools. Writes it all down as it happens.">
+  <meta name="description" content="Linda's Open Source Life — a living CV of real projects, current questions and ways to build together.">
+  <meta property="og:title" content="Linda — Open Source Life">
+  <meta property="og:description" content="Don't hire a résumé. Explore the work, the questions and the possibilities — then build something together.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://lindaa283.github.io/">
   <meta property="og:site_name" content="Linda">
@@ -22,7 +22,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Archivo:wght@400;600;800;900&family=Space+Mono:wght@400;700&display=swap">
   <link rel="stylesheet" href="styles.css?v=13">
-  <title>Linda — building in public</title>
+  <title>Linda — Open Source Life</title>
   <script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.dataset.theme='dark'}catch(e){}</script>
 </head>
 <body>
@@ -40,7 +40,7 @@
   <header class="site-header">
     <a class="wordmark" href="#top" aria-label="Linda, home">LINDA<span>.</span></a>
     <nav aria-label="Primary navigation">
-      <a href="#products">Products</a><a href="#lab">Lab</a><a href="#notes">Notes</a><a href="#ladder">Class</a><a class="nav-play" href="game.html">▶ Play</a>
+      <a href="#living-cv">Living CV</a><a href="#products">Projects</a><a href="#lab">Lab</a><a href="#changelog">Changelog</a><a class="nav-play" href="game.html">▶ Play</a>
     </nav>
     <div class="header-right">
       <button class="theme-toggle" type="button" aria-label="Switch between white and black mode" aria-pressed="false">
@@ -57,7 +57,7 @@
         <span>NO. 01</span><span>LEARNING IN PUBLIC</span><span class="mast-mid">FOUNDER IN TRAINING</span><span>AW 26</span><span>€ ∞</span>
       </div>
       <div class="hero-copy">
-        <p class="eyebrow">21 · pharma × AI × building</p>
+        <p class="eyebrow">OPEN SOURCE LIFE · VERSION 0.1</p>
         <div class="term" id="term">
           <ol class="term-out" id="termOut" aria-live="polite"></ol>
           <p class="term-line">
@@ -67,11 +67,11 @@
           </p>
           <span class="term-hint" id="termHint">click to type</span>
         </div>
-        <h1>Pharma student.<br>Shop owner. Still deciding<br>which is the <em class="shimmer">day job</em><span class="stop">.</span></h1>
-        <p class="lede">I’m Linda. I study pharmaceutical science and build AI products on the side and on purpose: an AI tools shop, research bots, automation for my own life. Founder in training, on the road to YC, learning everything in public.</p>
+        <h1>Don't hire my résumé.<br><em class="shimmer">Build with me</em><span class="stop">.</span></h1>
+        <p class="lede">I’m Linda. This is a living record of what I have actually built, what I am learning, and where a useful collaboration could begin. The work is open to contribution. My privacy and my decisions are not.</p>
         <div class="actions">
-          <a class="button primary" href="#products"><span>See what I’m building</span></a>
-          <a class="button secondary" href="https://x.com/wongyong_fan" target="_blank" rel="noreferrer"><span>Follow on X</span></a>
+          <a class="button primary" href="#living-cv"><span>Explore the living CV</span></a>
+          <a class="button secondary" href="https://github.com/Lindaa283/Lindaa283.github.io/issues/new?template=life-pull-request.yml" target="_blank" rel="noreferrer"><span>Propose a collaboration</span></a>
         </div>
         <a class="play-cta" href="game.html">
           <span class="pc-badge">NEW</span>
@@ -117,6 +117,51 @@
         <div><strong>~3K</strong><span>followers on X</span></div>
         <div><strong data-count="7">7</strong><span>public repos</span></div>
         <div><strong data-count="1">1</strong><span>live AI shop</span></div>
+      </div>
+    </section>
+
+    <!-- ================= LIVING CV ================= -->
+    <section class="section living-cv" id="living-cv">
+      <div class="section-head reveal">
+        <p class="eyebrow">The living CV</p>
+        <h2>A person is more than a job title.<br><span class="sub">This page is a map, not a pitch deck.</span></h2>
+      </div>
+      <div class="living-intro reveal">
+        <p class="living-manifesto">I work where pharmaceutical science, AI, entrepreneurship and internet culture overlap. I am early in the journey, so I label experiments as experiments and unfinished work as unfinished work. What matters here is evidence, curiosity and the ability to keep learning in public.</p>
+        <aside><b>How to read this site</b><span>Projects show evidence.</span><span>Notes show how I think.</span><span>Open loops show where you can help.</span><span>The changelog shows what actually changed.</span></aside>
+      </div>
+
+      <div class="life-grid">
+        <article class="life-card reveal"><p class="tag">BACKGROUND</p><h3>Science with a builder's bias</h3><p>I study pharmaceutical science in an international collaborative programme. Outside class, I build research tools, small products and personal automation.</p><a href="#lab">See the scientific work</a></article>
+        <article class="life-card reveal"><p class="tag">INTERESTS</p><h3>Systems, stories, subcultures</h3><p>Drug discovery, AI, open-source collaboration, entrepreneurship, digital identity, games, cosplay and the ways people create opportunity together.</p><a href="#faces">See the human side</a></article>
+        <article class="life-card reveal"><p class="tag">POTENTIAL</p><h3>Connecting fields that rarely meet</h3><p>I am most useful when a problem needs scientific care, internet-native experimentation and the willingness to turn a vague idea into a testable first version.</p><a href="#products">See what shipped</a></article>
+      </div>
+
+      <div class="open-loops reveal">
+        <div>
+          <p class="eyebrow">Open loops</p>
+          <h3>Things worth building together</h3>
+          <ul>
+            <li><b>Research:</b> reproducible, beginner-accessible AI tools for pharmaceutical questions.</li>
+            <li><b>Products:</b> small experiments that turn recurring confusion into a useful service.</li>
+            <li><b>Learning:</b> honest feedback from scientists, founders and operators with different paths.</li>
+            <li><b>Wild cards:</b> opportunities I would not know to search for on a job board.</li>
+          </ul>
+        </div>
+        <div class="contribute-panel">
+          <p class="tag">SUBMIT A LIFE PULL REQUEST</p>
+          <h3>Bring a specific possibility.</h3>
+          <p>Share context, what you are proposing, what each person contributes, and the smallest reversible next step. Public proposals belong in GitHub Issues; sensitive details should stay out of the issue.</p>
+          <div class="actions">
+            <a class="button primary" href="https://github.com/Lindaa283/Lindaa283.github.io/issues/new?template=life-pull-request.yml" target="_blank" rel="noreferrer"><span>Open a proposal</span></a>
+            <a class="button ghost" href="https://github.com/Lindaa283/Lindaa283.github.io/issues" target="_blank" rel="noreferrer"><span>Browse open issues</span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="boundaries reveal">
+        <p class="eyebrow">Public by design, private by default</p>
+        <div><p><b>Open:</b> public work, learning notes, current questions, collaboration proposals and outcomes I choose to share.</p><p><b>Not open:</b> bank or identity details, home address, real-time location, private messages, private relationships, immigration documents or anyone else's story without consent.</p><p><b>Decision rule:</b> a proposal is an invitation, never an obligation. I keep final control over what is accepted, shared or stopped.</p></div>
       </div>
     </section>
 
@@ -246,14 +291,19 @@
     </section>
 
     <!-- ================= NOTES ================= -->
-    <section class="notes-sec" id="notes">
+    <section class="notes-sec" id="changelog">
       <div class="section-head reveal">
-        <p class="eyebrow">Notes</p>
-        <h2>Working in the open.</h2>
+        <p class="eyebrow">Changelog</p>
+        <h2>What changed, not what was promised.</h2>
       </div>
-      <p class="notes-lede reveal">Everything I learn, build and get wrong, written down as it happens. Shorter and rougher than a blog, because the point is the frequency, not the polish.</p>
+      <p class="notes-lede reveal">A public record of shipped work, changed beliefs and honest corrections. The newest entry is the current version of this living CV.</p>
 
       <ol class="notes">
+        <li class="note reveal">
+          <time datetime="2026-11-28">28 Nov 2026</time>
+          <h3>Open Source Life v0.1</h3>
+          <p>Reframed this site as a living CV: evidence of work, current open loops, a public collaboration route and explicit privacy boundaries. Added a structured GitHub Issue for proposals.</p>
+        </li>
         <li class="note reveal">
           <time datetime="2026-11-22">22 Nov 2026</time>
           <h3>The week a model wrote seventeen million lines of proof</h3>
@@ -296,3 +346,4 @@
   <script src="script.js?v=13" defer></script>
 </body>
 </html>
+
